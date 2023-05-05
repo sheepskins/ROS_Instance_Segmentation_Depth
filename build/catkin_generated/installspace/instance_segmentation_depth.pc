@@ -3,6 +3,6 @@ prefix=/usr/local
 Name: instance_segmentation_depth
 Description: Description of instance_segmentation_depth
 Version: 0.0.1
-Cflags: 
+Cflags: -I${prefix}/include
 Libs: -L${prefix}/lib 
 Requires: 

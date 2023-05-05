@@ -3,6 +3,6 @@ prefix=/home/mitch/catkin_ws/src/instance_segmentation_depth/build/devel
 Name: instance_segmentation_depth
 Description: Description of instance_segmentation_depth
 Version: 0.0.1
-Cflags: 
+Cflags: -I/home/mitch/catkin_ws/src/instance_segmentation_depth/build/devel/include
 Libs: -L${prefix}/lib 
 Requires: 

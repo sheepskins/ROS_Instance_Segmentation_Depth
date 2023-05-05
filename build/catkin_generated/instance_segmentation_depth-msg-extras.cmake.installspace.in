@@ -1,0 +1,2 @@
+set(instance_segmentation_depth_MESSAGE_FILES "msg/Result.msg")
+set(instance_segmentation_depth_SERVICE_FILES "srv/Detection.srv")
