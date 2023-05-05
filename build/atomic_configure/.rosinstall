@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/mitch/catkin_ws/src/instance_segmentation_depth/build/devel/setup.sh
