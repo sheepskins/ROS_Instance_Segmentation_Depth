@@ -1,28 +1,56 @@
 #!/usr/bin/env python3
 
 import rospy
+import message_filters
 from sensor_msgs.msg import Image
+from instance_segmentation_depth.msg import Depth_Result
 from instance_segmentation_depth.srv import Detection, DetectionRequest
 from instance_segmentation_depth.msg import Result
 import numpy as np
 
 box_pub = rospy.Publisher('mask_rcnn_detections', Result, queue_size=1)
+obj_depth_pub = rospy.Publisher('object_depth/objects', Depth_Result, queue_size=1)
 
-def process(image):
+def process(image, depth):
     rospy.wait_for_service('mask_rcnn_service')
+
+    global detections
+    depth_data = depth.data
 
     try:
         detection_func = rospy.ServiceProxy('mask_rcnn_service', Detection)
         detection_msg = detection_func(image)
-        box_pub.publish(detection_msg.detection_result)
-        rospy.loginfo("Detection time: %f", (detection_msg.detection_result.header.stamp - image.header.stamp).to_sec())
+        detections = detection_msg.detection_result
+        # box_pub.publish(detection_msg.detection_result)
+        rospy.loginfo("Detection time: %f \n objects detected: %x", (detections.header.stamp - image.header.stamp).to_sec(), len(detections.masks))
 
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
+    
+    objects = Depth_Result()
+
+    
+    for obj_index, detection in enumerate(detections.masks):
+        deptharray = []
+        for index, pixel in enumerate(detection.data):
+            if pixel == 1:
+                deptharray.append[depth_data[index]]
+        deptharray = np.array(deptharray)
+        q3, q1 = np.percentile(deptharray, [80,20])
+        objects.size[obj_index] = q3-q1
+        objects.depth[obj_index] = np.median(deptharray)
+        objects.class_names[obj_index] = detections.class_names[obj_index]
+
+    obj_depth_pub.publish(objects)
+                
+
 
 def main():
-    im_sub = rospy.Subscriber('/camera/image_raw', Image, callback=process, queue_size=1)
     rospy.init_node('depth_node')
+    im_sub = message_filters.Subscriber('/camera/rgb/image_raw', Image)
+    depth_sub = message_filters.Subscriber('/camera/depth/image_raw', Image)
+    ts = message_filters.ApproximateTimeSynchronizer([im_sub, depth_sub], queue_size=1, slop=0.1)
+    ts.registerCallback(process)
     rate = rospy.Rate(1)
     rospy.spin()
 

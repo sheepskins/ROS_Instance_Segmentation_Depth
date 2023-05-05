@@ -11,4 +11,5 @@ export CMAKE_PREFIX_PATH="/home/mitch/catkin_ws/src/instance_segmentation_depth/
 export LD_LIBRARY_PATH="/home/mitch/catkin_ws/src/instance_segmentation_depth/build/devel/lib:$LD_LIBRARY_PATH"
 export PKG_CONFIG_PATH="/home/mitch/catkin_ws/src/instance_segmentation_depth/build/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/home/mitch/catkin_ws/src/instance_segmentation_depth/build'
+export PYTHONPATH="/home/mitch/catkin_ws/src/instance_segmentation_depth/build/devel/lib/python3/dist-packages:$PYTHONPATH"
 export ROS_PACKAGE_PATH="/home/mitch/catkin_ws/src/instance_segmentation_depth:$ROS_PACKAGE_PATH"

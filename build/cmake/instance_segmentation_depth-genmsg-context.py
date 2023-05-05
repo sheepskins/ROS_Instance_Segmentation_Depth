@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.context.in
 
-messages_str = "/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Result.msg"
+messages_str = "/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Result.msg;/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Depth_Result.msg"
 services_str = "/home/mitch/catkin_ws/src/instance_segmentation_depth/srv/Detection.srv"
 pkg_name = "instance_segmentation_depth"
 dependencies_str = "sensor_msgs;std_msgs"

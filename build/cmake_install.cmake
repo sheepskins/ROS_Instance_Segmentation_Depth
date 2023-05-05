@@ -134,7 +134,10 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/instance_segmentation_depth/msg" TYPE FILE FILES "/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Result.msg")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/instance_segmentation_depth/msg" TYPE FILE FILES
+    "/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Result.msg"
+    "/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Depth_Result.msg"
+    )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)

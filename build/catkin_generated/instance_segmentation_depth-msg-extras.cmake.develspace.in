@@ -1,2 +1,2 @@
-set(instance_segmentation_depth_MESSAGE_FILES "/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Result.msg")
+set(instance_segmentation_depth_MESSAGE_FILES "/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Result.msg;/home/mitch/catkin_ws/src/instance_segmentation_depth/msg/Depth_Result.msg")
 set(instance_segmentation_depth_SERVICE_FILES "/home/mitch/catkin_ws/src/instance_segmentation_depth/srv/Detection.srv")
