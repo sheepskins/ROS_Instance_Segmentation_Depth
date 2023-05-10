@@ -19,6 +19,7 @@ def process(image, depth):
     bridge = CvBridge()
     depth_image = bridge.imgmsg_to_cv2(img_msg=depth, desired_encoding="passthrough")
     depth_array = np.array(depth_image,dtype=np.float32)
+    depth_array = depth_array.flatten()
     
 
     try:
@@ -36,9 +37,9 @@ def process(image, depth):
     
     for obj_index, detection in enumerate(detections.masks):
         deptharray = []
-        rect_image = bridge.imgmsg_to_cv2(img_msg=detection, desired_encoding="passthrough")
-        image_array = np.array(rect_image,dtype=np.float32)
-        for index, pixel in np.ndenumerate(image_array):
+        # rect_image = bridge.imgmsg_to_cv2(img_msg=detection, desired_encoding="passthrough")
+        # image_array = np.array(rect_image,dtype=np.float32)
+        for index, pixel in enumerate(detection.data):
             if pixel == 1:
                 deptharray.append(depth_array[index])
         deptharray = np.array(deptharray)
