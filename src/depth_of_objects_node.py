@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
+from constants import ANGLE_INC, MIN_ANGLE, WIDTH
 import message_filters
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
@@ -27,7 +28,7 @@ def process(image, depth):
         detection_msg = detection_func(image)
         detections = detection_msg.detection_result
         # box_pub.publish(detection_msg.detection_result)
-        rospy.loginfo("Detection time: %f \n objects detected: %x", (detections.header.stamp - image.header.stamp).to_sec(), len(detections.masks))
+        #rospy.loginfo("Detection time: %f \n objects detected: %x", (detections.header.stamp - image.header.stamp).to_sec(), len(detections.masks))
 
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
@@ -37,19 +38,21 @@ def process(image, depth):
     
     for obj_index, detection in enumerate(detections.masks):
         deptharray = []
-        # rect_image = bridge.imgmsg_to_cv2(img_msg=detection, desired_encoding="passthrough")
-        # image_array = np.array(rect_image,dtype=np.float32)
         for index, pixel in enumerate(detection.data):
             if pixel == 1:
                 deptharray.append(depth_array[index])
+        
+        angle_index = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width/2
+        
         deptharray = np.array(deptharray)
         q3, q1 = np.percentile(deptharray, [90,10])
-        objects.size.append(q3-q1)
-        objects.depths.append(np.median(deptharray))
+        objects.sizes.append(q3-q1)
+        depth = np.median(deptharray)
+        objects.depths.append(depth)
+        objects.angles.append(angle_index * ANGLE_INC + MIN_ANGLE)
         objects.class_names.append(detections.class_names[obj_index])
 
     obj_depth_pub.publish(objects)
-                
 
 
 def main():

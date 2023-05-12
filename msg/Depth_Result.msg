@@ -7,4 +7,7 @@ string[] class_names
 float32[] depths
 
 # size of each object
-float32[] size
+float32[] sizes
+
+# position of each object
+float32[] angles
