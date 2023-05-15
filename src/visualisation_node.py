@@ -3,16 +3,40 @@
 import rospy
 from constants import ANGLE_INC, MIN_ANGLE, WIDTH
 from visualization_msgs.msg import Marker
-from math import cos, sin
+from math import cos, sin, dist, radians        
 from instance_segmentation_depth.msg import Depth_Result
 
 
 vis_pub = rospy.Publisher('visualization_marker', Marker, queue_size=1)
 
-objects = []
+class Object: 
+    name = []
+    x_pos = 0
+    y_pos = 0
+    id = 0
+
+
+objects_list = []
+
+def object_checker(objects_list, sample_object):
+    for item in objects_list:
+        if (item.name == sample_object.name and dist([item.x_pos,item.y_pos], [sample_object.x_pos, sample_object.y_pos]) < 2):
+            return item.id
+    sample_object.id = len(objects_list) + 1
+    objects_list.append(sample_object)
+    return sample_object.id
+
+    
 
 def process(objects):
+    
     for i in range(len(objects.depths)):
+        object = Object()
+        object.name = objects.class_names[i]
+        object.x_pos = objects.depths[i]/1000 * cos(radians(objects.angles[i]))
+        object.y_pos = objects.depths[i]/1000 * sin(radians(objects.angles[i]))
+
+
         marker = Marker()
 
         marker.header.frame_id = "map"
@@ -21,12 +45,12 @@ def process(objects):
 
         # Shape
         marker.type = marker.CYLINDER
-        marker.id = 0
+        marker.id = object_checker(objects_list, object)
         marker.action = 0
 
         # Scale
-        marker.scale.x = objects.sizes[i]/1000
-        marker.scale.y = objects.sizes[i]/1000
+        marker.scale.x = 0.5 #objects.sizes[i]/1000
+        marker.scale.y = 0.5 #objects.sizes[i]/1000
         marker.scale.z = 2
 
         # Color
@@ -36,13 +60,14 @@ def process(objects):
         marker.color.a = 1.0
 
         # Pose
-        marker.pose.position.x = objects.depths[i]/1000 * cos(objects.angles[i])
-        marker.pose.position.y = objects.depths[i]/1000 * sin(objects.angles[i])
+        marker.pose.position.x = object.x_pos
+        marker.pose.position.y = object.y_pos
         marker.pose.position.z = 0
         marker.pose.orientation.x = 0.0
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
         marker.pose.orientation.w = 1.0
+        
 
         vis_pub.publish(marker)
     
