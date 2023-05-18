@@ -5,9 +5,16 @@ from constants import ANGLE_INC, MIN_ANGLE, WIDTH
 from visualization_msgs.msg import Marker
 from math import cos, sin, dist, radians        
 from instance_segmentation_depth.msg import Depth_Result
+from random import randint
 
 
 vis_pub = rospy.Publisher('visualization_marker', Marker, queue_size=1)
+
+def genColour(): 
+    r = randint(0,255)
+    g = randint(0,255)
+    b = randint(0,255)
+    return [r,g,b]
 
 class Object: 
     name = []
@@ -15,6 +22,7 @@ class Object:
     y_pos = 0
     prev_x = 0
     prev_y = 0
+    colour = []
     id = 0
 
 
@@ -25,6 +33,7 @@ def object_checker(objects_list, sample_object):
         if (item.name == sample_object.name and dist([item.x_pos,item.y_pos], [sample_object.x_pos, sample_object.y_pos]) < 2):
             return item
     sample_object.id = len(objects_list) + 1
+    sample_object.colour = genColour()
     objects_list.append(sample_object)
     return objects_list[-1]
 
@@ -51,7 +60,6 @@ def process(objects):
         
         marker.header.frame_id = "world"
         marker.header.stamp = rospy.Time.now()
-        marker.ns = ""
 
         # Shape
         marker.type = marker.CYLINDER
