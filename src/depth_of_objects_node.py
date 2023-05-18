@@ -52,7 +52,7 @@ def process(image, depth):
         size_left = detections.boxes[obj_index].x_offset
         size_right = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width
         size_angle = size_right-size_left * ANGLE_INC
-        size = sqrt(pow(depth, 2)(1-cos(size_angle)))
+        size = sqrt(pow(depth, 2)*(1-cos(size_angle)))
         objects.sizes.append(size)
         
         objects.angles.append(angle_index * ANGLE_INC + MIN_ANGLE)

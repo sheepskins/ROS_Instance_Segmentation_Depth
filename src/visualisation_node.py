@@ -6,14 +6,15 @@ from visualization_msgs.msg import Marker
 from math import cos, sin, dist, radians        
 from instance_segmentation_depth.msg import Depth_Result
 from random import randint
+from numpy import interp
 
 
 vis_pub = rospy.Publisher('visualization_marker', Marker, queue_size=1)
 
 def genColour(): 
-    r = randint(0,255)
-    g = randint(0,255)
-    b = randint(0,255)
+    r = interp(randint(0,255),[0,255], [0,1])
+    g = interp(randint(0,255),[0,255], [0,1])
+    b = interp(randint(0,255),[0,255], [0,1])
     return [r,g,b]
 
 class Object: 
@@ -30,7 +31,7 @@ objects_list = []
 
 def object_checker(objects_list, sample_object):
     for item in objects_list:
-        if (item.name == sample_object.name and dist([item.x_pos,item.y_pos], [sample_object.x_pos, sample_object.y_pos]) < 2):
+        if (item.name == sample_object.name and dist([item.x_pos,item.y_pos], [sample_object.x_pos, sample_object.y_pos]) < 1):
             return item
     sample_object.id = len(objects_list) + 1
     sample_object.colour = genColour()
@@ -40,7 +41,7 @@ def object_checker(objects_list, sample_object):
     
 
 def process(objects):
-    
+    rospy.loginfo(len(objects_list))
     for i in range(len(objects.depths)):
         object = Object()
         object.name = objects.class_names[i]
@@ -58,7 +59,7 @@ def process(objects):
         object.prev_x = object.x_pos 
         object.prev_y = object.y_pos
         
-        marker.header.frame_id = "world"
+        marker.header.frame_id = "camera_link"
         marker.header.stamp = rospy.Time.now()
 
         # Shape
@@ -71,9 +72,9 @@ def process(objects):
         marker.scale.z = 2
 
         # Color
-        marker.color.r = 0.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
+        marker.color.r = object.colour[0]
+        marker.color.g = object.colour[1]
+        marker.color.b = object.colour[2]
         marker.color.a = 1.0
 
         # Pose
@@ -84,6 +85,8 @@ def process(objects):
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
         marker.pose.orientation.w = 1.0
+
+        marker.lifetime = rospy.Duration(3)
         
 
         vis_pub.publish(marker)
