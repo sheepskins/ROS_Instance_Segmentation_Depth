@@ -13,6 +13,8 @@ class Object:
     name = []
     x_pos = 0
     y_pos = 0
+    prev_x = 0
+    prev_y = 0
     id = 0
 
 
@@ -21,10 +23,10 @@ objects_list = []
 def object_checker(objects_list, sample_object):
     for item in objects_list:
         if (item.name == sample_object.name and dist([item.x_pos,item.y_pos], [sample_object.x_pos, sample_object.y_pos]) < 2):
-            return item.id
+            return item
     sample_object.id = len(objects_list) + 1
     objects_list.append(sample_object)
-    return sample_object.id
+    return objects_list[-1]
 
     
 
@@ -36,16 +38,23 @@ def process(objects):
         object.x_pos = objects.depths[i]/1000 * cos(radians(objects.angles[i]))
         object.y_pos = objects.depths[i]/1000 * sin(radians(objects.angles[i]))
 
+        object = object_checker(objects_list, object)
 
         marker = Marker()
 
-        marker.header.frame_id = "map"
+        marker.id = object.id
+
+        object.x_pos = (object.x_pos + object.prev_x)/2
+        object.y_pos = (object.y_pos + object.prev_y)/2
+        object.prev_x = object.x_pos 
+        object.prev_y = object.y_pos
+        
+        marker.header.frame_id = "world"
         marker.header.stamp = rospy.Time.now()
         marker.ns = ""
 
         # Shape
         marker.type = marker.CYLINDER
-        marker.id = object_checker(objects_list, object)
         marker.action = 0
 
         # Scale

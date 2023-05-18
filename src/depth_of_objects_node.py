@@ -9,6 +9,7 @@ from instance_segmentation_depth.msg import Depth_Result
 from instance_segmentation_depth.srv import Detection, DetectionRequest
 from instance_segmentation_depth.msg import Result
 import numpy as np
+from math import sqrt, cos, pow
 
 box_pub = rospy.Publisher('mask_rcnn_detections', Result, queue_size=1)
 obj_depth_pub = rospy.Publisher('object_depth/objects', Depth_Result, queue_size=1)
@@ -42,13 +43,18 @@ def process(image, depth):
             if pixel == 1:
                 deptharray.append(depth_array[index])
         
-        angle_index = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width/2
-        
         deptharray = np.array(deptharray)
-        q3, q1 = np.percentile(deptharray, [90,10])
-        objects.sizes.append(q3-q1)
         depth = np.median(deptharray)
         objects.depths.append(depth)
+
+        angle_index = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width/2
+
+        size_left = detections.boxes[obj_index].x_offset
+        size_right = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width
+        size_angle = size_right-size_left * ANGLE_INC
+        size = sqrt(pow(depth, 2)(1-cos(size_angle)))
+        objects.sizes.append(size)
+        
         objects.angles.append(angle_index * ANGLE_INC + MIN_ANGLE)
         objects.class_names.append(detections.class_names[obj_index])
 
