@@ -1,0 +1,13 @@
+<launch>
+  <arg name="Camera" value="true"/>
+  
+  <group if="$(arg Camera)">
+    <include file="$(find realsense2_camera)/launch/rs_aligned_depth.launch">
+      <arg name="enable_infra1" value="false"/>
+      <arg name="enable_infra2" value="false"/>
+    </include>
+  </group>
+
+  <node pkg="mask_rcnn" name="mask" type="infer_service.py" output="screen"> </node>
+  <node pkg="instance_segmentation_depth" name="vis" type="depth_of_objects_node.py" output="screen"> </node>
+</launch>

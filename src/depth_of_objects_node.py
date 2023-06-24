@@ -11,7 +11,10 @@ from instance_segmentation_depth.msg import Result
 import numpy as np
 from math import sqrt, cos, pow
 
-box_pub = rospy.Publisher('mask_rcnn_detections', Result, queue_size=1)
+from vis_util import draw_segmentation_map
+
+
+box_pub = rospy.Publisher('mask_rcnn_detections', Image, queue_size=1)
 obj_depth_pub = rospy.Publisher('object_depth/objects', Depth_Result, queue_size=1)
 
 def process(image, depth):
@@ -28,39 +31,41 @@ def process(image, depth):
         detection_func = rospy.ServiceProxy('mask_rcnn_service', Detection)
         detection_msg = detection_func(image)
         detections = detection_msg.detection_result
-        # box_pub.publish(detection_msg.detection_result)
+
+        objects = Depth_Result()
+        for obj_index, detection in enumerate(detections.masks):
+            deptharray = []
+            for index, pixel in enumerate(detection.data):
+                if pixel == 1:
+                    deptharray.append(depth_array[index])
+            
+            deptharray = np.array(deptharray)
+            depth = np.median(deptharray)
+            objects.depths.append(depth)
+
+            angle_index = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width/2
+
+            size_left = detections.boxes[obj_index].x_offset
+            size_right = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width
+            size_angle = size_right-size_left * ANGLE_INC
+            size = sqrt(pow(depth, 2)*(1-cos(size_angle)))
+            objects.sizes.append(size)
+            
+            objects.angles.append(angle_index * ANGLE_INC + MIN_ANGLE)
+            objects.class_names.append(detections.class_names[obj_index])
+
+        obj_depth_pub.publish(objects)
+
+        np_image = bridge.imgmsg_to_cv2(image, 'passthrough')
+        final = draw_segmentation_map(np_image, detections.masks, detections.boxes, detections.class_names, objects.depths)
+        box_pub.publish(bridge.cv2_to_imgmsg(final, encoding='rgb8'))
+
         #rospy.loginfo("Detection time: %f \n objects detected: %x", (detections.header.stamp - image.header.stamp).to_sec(), len(detections.masks))
 
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
     
-    objects = Depth_Result()
-
     
-    for obj_index, detection in enumerate(detections.masks):
-        deptharray = []
-        for index, pixel in enumerate(detection.data):
-            if pixel == 1:
-                deptharray.append(depth_array[index])
-        
-        deptharray = np.array(deptharray)
-        depth = np.median(deptharray)
-        objects.depths.append(depth)
-
-        angle_index = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width/2
-
-        size_left = detections.boxes[obj_index].x_offset
-        size_right = detections.boxes[obj_index].x_offset + detections.boxes[obj_index].width
-        size_angle = size_right-size_left * ANGLE_INC
-        size = sqrt(pow(depth, 2)*(1-cos(size_angle)))
-        objects.sizes.append(size)
-        
-        objects.angles.append(angle_index * ANGLE_INC + MIN_ANGLE)
-        objects.class_names.append(detections.class_names[obj_index])
-
-    obj_depth_pub.publish(objects)
-
-
 def main():
     rospy.init_node('depth_node')
     im_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
